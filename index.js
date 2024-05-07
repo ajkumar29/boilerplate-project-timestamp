@@ -2,43 +2,54 @@
 // where your node app starts
 
 // init project
-var express = require('express');
+var express = require("express");
 var app = express();
 
 // enable CORS (https://en.wikipedia.org/wiki/Cross-origin_resource_sharing)
-// so that your API is remotely testable by FCC 
-var cors = require('cors');
-app.use(cors({optionsSuccessStatus: 200}));  // some legacy browsers choke on 204
+// so that your API is remotely testable by FCC
+var cors = require("cors");
+const { json } = require("express/lib/response");
+const e = require("express");
+app.use(cors({ optionsSuccessStatus: 200 })); // some legacy browsers choke on 204
 
 // http://expressjs.com/en/starter/static-files.html
-app.use(express.static('public'));
+app.use(express.static("public"));
 
 // http://expressjs.com/en/starter/basic-routing.html
 app.get("/", function (req, res) {
-  res.sendFile(__dirname + '/views/index.html');
+  res.sendFile(__dirname + "/views/index.html");
 });
 
-
-// your first API endpoint... 
+// your first API endpoint...
 app.get("/api/hello", function (req, res) {
-  res.json({greeting: 'hello API'});
+  res.json({ greeting: "hello API" });
 });
 
 app.get("/api/:date", function (req, res) {
-  if (req.params.date.includes('-')){
-    const date = new Date(req.params.date)
-    res.json({"unix": date.getTime() , "utc": date.toUTCString() })
+  if (!req.params.date) {
+    const currentDate = new Date();
+    res.json({ unix: currentDate.getTime(), utc: currentDate.toUTCString() });
   } else {
-    const date = new Date(parseInt(req.params.date))
-    res.json({"unix": date.getTime() , "utc": date.toUTCString() })
-
+    let date = new Date(req.params.date);
+    if (date.toString() !== "Invalid Date") {
+      res.json({ unix: date.getTime(), utc: date.toUTCString() });
+    } else {
+      if (!isNaN(parseInt(req.params.date))) {
+        date = new Date(parseInt(req.params.date));
+        res.json({ unix: date.getTime(), utc: date.toUTCString() });
+      } else {
+        res.json({ error: "Invalid Date" });
+      }
+    }
   }
 });
 
-
-
+app.get("/api/", function (req, res) {
+  const currentDate = new Date();
+  res.json({ unix: currentDate.getTime(), utc: currentDate.toUTCString() });
+});
 
 // Listen on port set in environment variable or default to 3000
 var listener = app.listen(process.env.PORT || 3000, function () {
-  console.log('Your app is listening on port ' + listener.address().port);
+  console.log("Your app is listening on port " + listener.address().port);
 });
